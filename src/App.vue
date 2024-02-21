@@ -5,8 +5,13 @@
         <div class="grid-cell">1</div>
       </div>
       <GridCard>
-        <GridCell>
-          <img class="grid-img" src="https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662" alt="">
+        <GridCell draggable="true">
+          <img class="grid-img"
+            src="https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662"
+            alt="">
+        </GridCell>
+        <GridCell draggable="true"
+          icon="https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662">
         </GridCell>
       </GridCard>
     </div>
@@ -25,8 +30,18 @@ const GridCard = defineComponent({
 })
 const GridCell = defineComponent({
   name: "GridCell",
+  props: {
+    icon: {
+      type: String,
+      default: () => ''
+    }
+  },
   setup(props, { slots }) {
-    return () => h('div', { class: 'grid-cell' }, slots.default && slots.default())
+    return () => h('div', {
+      class: 'grid-cell', style: {
+        backgroundImage: `url(${props.icon})`
+      }
+    }, slots.default && slots.default())
   }
 })
 
@@ -74,7 +89,9 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     background: $theme;
     border-radius: 4px;
     overflow: hidden;
+    background-size: 100% 100%;
   }
+
   &-img {
     display: block;
     width: 100%;
