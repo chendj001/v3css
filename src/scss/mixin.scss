@@ -1,0 +1,18 @@
+@use 'sass:math';
+@use '@/scss/var.module' as *;
+
+// css3 @container 特性
+@mixin Container($width) {
+  @container (width > #{$width}) {
+    & {
+      @content;
+    }
+  }
+}
+@mixin ContainerGrid($width, $count, $gap: 0, $padding: 0) {
+  @for $i from 1 through $count {
+    @include Container($width * $i + ($i - 1) * $gap + $padding) {
+      grid-template-columns: repeat($i, $width);
+    }
+  }
+}
