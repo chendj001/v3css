@@ -5,47 +5,179 @@
         <div class="grid-cell">1</div>
       </div>
       <GridCard>
-        <GridCell draggable="true">
-          <img class="grid-img"
-            src="https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662"
-            alt="">
-        </GridCell>
-        <GridCell draggable="true"
-          icon="https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662">
-        </GridCell>
+        <GridMain style="grid-area: 1/1/3/-1"></GridMain>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
+        <GridCell :icon="img"></GridCell>
       </GridCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts" name="App">
-import { defineComponent, h } from 'vue';
+const img =
+  'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662'
+const img2 = 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_387022c140094613fbd5b711b59b94ca~c5_300x300.jpeg?from=2956013662'
+import { defineComponent, h, ref, toRaw, computed } from 'vue'
 
+const users = [{
+  id: '001',
+}, {
+  id: '002',
+}, {
+  id: '100001',
+  parent: '001',
+  icon: img2,
+}, {
+  id: '100002',
+  parent: '001',
+  icon: img2
+}, {
+  id: '100003',
+  parent: '001',
+  icon: img2
+}]
 
 const GridCard = defineComponent({
-  name: "GridCard",
+  name: 'GridCard',
   setup(props, { slots }) {
-    return () => h('div', { class: 'grid-card' }, slots.default && slots.default())
+    return () =>
+      h('div', { class: 'grid-card' }, slots.default && slots.default())
   }
 })
 const GridCell = defineComponent({
-  name: "GridCell",
+  name: 'GridCell',
   props: {
     icon: {
       type: String,
       default: () => ''
+    },
+    draggable: {
+      type: Boolean,
+      default: () => true
     }
   },
   setup(props, { slots }) {
-    return () => h('div', {
-      class: 'grid-cell', style: {
-        backgroundImage: `url(${props.icon})`
-      }
-    }, slots.default && slots.default())
+    const dragstart = (event: DragEvent) => {
+      event.dataTransfer?.setData('text/plan', '001')
+    }
+    return () =>
+      h(
+        'div',
+        {
+          draggable: props.draggable,
+          onDragstart: dragstart,
+          class: 'grid-cell',
+          style: {
+            backgroundImage: props.icon && `url(${props.icon})`
+          }
+        },
+        slots.default && slots.default()
+      )
   }
 })
 
+const GridBanner = defineComponent({
+  name: 'GridBanner',
+  props: {
+    app: {
+      type: Object,
+      default: () => null
+    }
+  },
+  setup(props, { slots }) {
+    const app = [
+      {
+        icon: img
+      },
+      {
+        icon: img
+      },
+      {
+        icon: img
+      },
+      {
+        icon: img
+      }
+    ]
+    const apps = computed(() => props.app.value || app)
 
+    return {
+      apps
+    }
+
+  },
+  render() {
+    console.log(this.apps)
+    return h(
+      'div',
+      {
+        class: 'grid-banner grid-cell'
+      },
+      [
+        h(
+          'div',
+          {
+            class: 'grid-banner-content'
+          },
+          this.apps.map((_app) => h(GridCell, { icon: _app.icon, draggable: false }))
+        ),
+        h(
+          'div',
+          {
+            class: 'grid-banner-status'
+          },
+          '虾仁不眨眼！ 游戏 视频 动漫'
+        )
+      ]
+    )
+  }
+})
+
+const GridMain = defineComponent({
+  name: 'GridMain',
+  setup(props, { slots }) {
+    const dragover = (event: DragEvent) => {
+      event.preventDefault()
+    }
+    const child: any = ref(null);
+    const drop = (event: DragEvent) => {
+      event.preventDefault()
+      const data = event.dataTransfer?.getData('text/plan')
+      child.value = users.filter(item => data == item.parent);
+    }
+
+
+    return () =>
+      h(
+        'div',
+        {
+          class: 'grid-main',
+          onDragover: dragover,
+          onDrop: drop
+        },
+        [
+          h(GridCell, {
+            draggable: false,
+            icon: img,
+            style: {
+              gridArea: '1/1/span 2/span 2'
+            }
+          }),
+          h(GridBanner, {
+            app: toRaw(child),
+            style: {
+              gridArea: '1/3/span 2/ -1'
+            }
+          })
+        ]
+      )
+  }
+})
 </script>
 
 <style lang="scss">
@@ -69,7 +201,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     grid-template-columns: repeat(4, $width);
     justify-content: center;
     color: #fff;
-    gap: $gap*2;
+    gap: $gap * 2;
     @include ContainerGrid($width, 4, $gap, 10px);
   }
 
@@ -90,6 +222,36 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     border-radius: 4px;
     overflow: hidden;
     background-size: 100% 100%;
+    cursor: pointer;
+  }
+
+  &-main {
+    display: grid;
+    gap: $gap;
+    grid-template-columns: repeat(7, 1fr);
+    border-radius: 4px;
+    overflow: hidden;
+    background-size: 100% 100%;
+  }
+
+  &-banner {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+
+    &-content {
+      grid-area: 1/1 / span 2/-1;
+      display: grid;
+      padding: 10px 10px 0;
+      grid-template-columns: repeat(4, 1fr);
+      gap: $gap;
+    }
+
+    &-status {
+      display: grid;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+    }
   }
 
   &-img {
