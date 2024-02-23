@@ -159,6 +159,7 @@ const GridMain = defineComponent({
       const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
       const transition = document.startViewTransition(() => {
         child.value = child.value ? null : users.filter(item => data == item.parent);
+        theme.value=!theme.value
       });
 
       transition.ready.then(() => {
@@ -267,11 +268,13 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
 
 
 
-::view-transition-image-pair(popup-transition) {
-  isolation: auto;
-}
+// ::view-transition-image-pair(popup-transition) {
+//   isolation: auto;
+// }
 
-::view-transition-old(popup-transition),
+::view-transition-old(popup-transition) {
+  // animation: none;
+}
 ::view-transition-new(popup-transition) {
   animation-duration: .15s;
 }
