@@ -1,11 +1,12 @@
 <template>
   <div class="grid">
-    <div class="grid-layout">
-      <div class="grid-card">
+    <div class="grid-layout ">
+      <div class="grid-card " style=" view-transition-name: main-nav1;
+  contain: layout;">
         <div class="grid-cell">1</div>
       </div>
       <GridCard>
-        <GridMain style="grid-area: 1/1/3/-1"></GridMain>
+        <GridMain style="grid-area: 1/1/3/-1; view-transition-name: popup-transition;"></GridMain>
         <GridCell :icon="img"></GridCell>
         <GridCell :icon="img"></GridCell>
         <GridCell :icon="img"></GridCell>
@@ -15,6 +16,7 @@
         <GridCell :icon="img"></GridCell>
       </GridCard>
     </div>
+    <div class="box" style="position: absolute;right:0;bottom: 0;width:100px;height: 100px;background-color: #f00;"></div>
   </div>
 </template>
 
@@ -144,21 +146,80 @@ const GridMain = defineComponent({
     const dragover = (event: DragEvent) => {
       event.preventDefault()
     }
+    const elRef = ref(null)
     const child: any = ref(null);
+    const theme = ref(false);
     const drop = (event: DragEvent) => {
       event.preventDefault()
       const data = event.dataTransfer?.getData('text/plan')
-      child.value = users.filter(item => data == item.parent);
+      const x = event.clientX;
+      const y = event.clientY;
+      const maxX = Math.max(x, innerWidth - x)
+      const maxY = Math.max(y, innerWidth - y)
+      const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      const transition = document.startViewTransition(() => {
+        child.value = child.value ? null : users.filter(item => data == item.parent);
+      });
+
+      transition.ready.then(() => {
+        document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0 at ${x}px ${y}px)`,
+              `circle(${radius}px at ${x}px ${y}px)`,
+            ]
+          },
+          {
+            duration: 1000,
+            easing: 'ease-in',
+            pseudoElement: '::view-transition-new(root)',
+          }
+        )
+      })
+
+
+
+
+
+      // //@ts-ignore
+      // event.target.style.viewTransitionName = 'GridMain'
+      // //@ts-ignore
+      // const transition: any = document.startViewTransition(() => {
+      //   child.value = users.filter(item => data == item.parent);
+      //   theme.value = !theme.value
+      //   //@ts-ignore
+      //   event.target.style.viewTransitionName = ''
+      // })
+      // transition.ready.then(() => {
+      //   const clipPath = [
+      //     `circle(0px at ${x}px ${y}px)`,
+      //     `circle(${endRadius}px at ${x}px ${y}px)`,
+      //   ];
+      //   document.documentElement.animate(
+      //     {
+      //       clipPath: clipPath,
+      //     },
+      //     {
+      //       duration: 2000,
+      //       easing: "ease-in",
+      //     }
+      //   );
+      // });
+
+
+
     }
+
 
 
     return () =>
       h(
         'div',
         {
-          class: 'grid-main',
+          class: ['grid-main', theme.value ? 'theme' : ''],
           onDragover: dragover,
-          onDrop: drop
+          onDrop: drop,
+          ref: elRef
         },
         [
           h(GridCell, {
@@ -191,6 +252,40 @@ $padding: 10px;
 $width: $size * 7 + $gap * (7-1) + $padding * 2;
 // 卡片高度
 $height: $size * 3 + $gap * (3-1) + $padding * 2;
+
+
+@keyframes clip {
+  from {
+    clip-path: circle(0% at var(--x) var(--y));
+  }
+
+  to {
+    clip-path: circle(100% at var(--x) var(--y));
+  }
+}
+
+
+
+
+::view-transition-image-pair(popup-transition) {
+  isolation: auto;
+}
+
+::view-transition-old(popup-transition),
+::view-transition-new(popup-transition) {
+  animation-duration: .15s;
+}
+
+.box {
+  view-transition-name: main-nav;
+  contain: layout;
+}
+
+
+.dark {
+  // color-scheme: dark;
+  background-color: #121212;
+}
 
 .grid {
   container-type: inline-size;
@@ -232,6 +327,12 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     border-radius: 4px;
     overflow: hidden;
     background-size: 100% 100%;
+
+
+  }
+
+  &-main.theme &-cell {
+    background-color: #ff5c00;
   }
 
   &-banner {
