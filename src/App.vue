@@ -22,8 +22,8 @@
 
 <script setup lang="ts" name="App">
 const img =
-  'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_300x300.jpeg?from=2956013662'
-const img2 = 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_387022c140094613fbd5b711b59b94ca~c5_300x300.jpeg?from=2956013662'
+  'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_80x80.jpeg?from=2956013662'
+const img2 = 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_387022c140094613fbd5b711b59b94ca~c5_80x80.jpeg?from=2956013662'
 import { defineComponent, h, ref, toRaw, computed } from 'vue'
 
 const users = [{
@@ -152,67 +152,10 @@ const GridMain = defineComponent({
     const drop = (event: DragEvent) => {
       event.preventDefault()
       const data = event.dataTransfer?.getData('text/plan')
-      const x = event.clientX;
-      const y = event.clientY;
-      const maxX = Math.max(x, innerWidth - x)
-      const maxY = Math.max(y, innerWidth - y)
-      const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-      const transition = document.startViewTransition(() => {
-        child.value = child.value ? null : users.filter(item => data == item.parent);
-        theme.value=!theme.value
-      });
-
-      transition.ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0 at ${x}px ${y}px)`,
-              `circle(${radius}px at ${x}px ${y}px)`,
-            ]
-          },
-          {
-            duration: 1000,
-            easing: 'ease-in',
-            pseudoElement: '::view-transition-new(root)',
-          }
-        )
-      })
-
-
-
-
-
-      // //@ts-ignore
-      // event.target.style.viewTransitionName = 'GridMain'
-      // //@ts-ignore
-      // const transition: any = document.startViewTransition(() => {
-      //   child.value = users.filter(item => data == item.parent);
-      //   theme.value = !theme.value
-      //   //@ts-ignore
-      //   event.target.style.viewTransitionName = ''
-      // })
-      // transition.ready.then(() => {
-      //   const clipPath = [
-      //     `circle(0px at ${x}px ${y}px)`,
-      //     `circle(${endRadius}px at ${x}px ${y}px)`,
-      //   ];
-      //   document.documentElement.animate(
-      //     {
-      //       clipPath: clipPath,
-      //     },
-      //     {
-      //       duration: 2000,
-      //       easing: "ease-in",
-      //     }
-      //   );
-      // });
-
-
+      child.value = child.value ? null : users.filter(item => data == item.parent);
+      theme.value = !theme.value
 
     }
-
-
-
     return () =>
       h(
         'div',
@@ -253,36 +196,6 @@ $padding: 10px;
 $width: $size * 7 + $gap * (7-1) + $padding * 2;
 // 卡片高度
 $height: $size * 3 + $gap * (3-1) + $padding * 2;
-
-
-@keyframes clip {
-  from {
-    clip-path: circle(0% at var(--x) var(--y));
-  }
-
-  to {
-    clip-path: circle(100% at var(--x) var(--y));
-  }
-}
-
-
-
-
-// ::view-transition-image-pair(popup-transition) {
-//   isolation: auto;
-// }
-
-::view-transition-old(popup-transition) {
-  // animation: none;
-}
-::view-transition-new(popup-transition) {
-  animation-duration: .15s;
-}
-
-.box {
-  view-transition-name: main-nav;
-  contain: layout;
-}
 
 
 .dark {
