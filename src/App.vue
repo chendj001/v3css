@@ -1,188 +1,206 @@
 <template>
   <div class="grid">
-    <div class="grid-layout ">
-      <div class="grid-card " style=" view-transition-name: main-nav1;
-  contain: layout;">
-        <div class="grid-cell">1</div>
-      </div>
-      <GridCard>
-        <GridMain style="grid-area: 1/1/3/-1; view-transition-name: popup-transition;"></GridMain>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
-        <GridCell :icon="img"></GridCell>
+    <div class="grid-layout">
+      <GridCard :data="users" v-for="(users, index) in groups" :key="index">
       </GridCard>
     </div>
-    <div class="box" style="position: absolute;right:0;bottom: 0;width:100px;height: 100px;background-color: #f00;"></div>
   </div>
 </template>
 
 <script setup lang="ts" name="App">
-const img =
-  'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_a86e56c980b7955312b5702a547a4cf0~c5_80x80.jpeg?from=2956013662'
-const img2 = 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_387022c140094613fbd5b711b59b94ca~c5_80x80.jpeg?from=2956013662'
-import { defineComponent, h, ref, toRaw, computed } from 'vue'
+import {
+  defineComponent,
+  h,
+  ref,
+  toRaw,
+  computed,
+  type PropType,
+  unref,
+  readonly,
+} from "vue";
 
-const users = [{
-  id: '001',
-}, {
-  id: '002',
-}, {
-  id: '100001',
-  parent: '001',
-  icon: img2,
-}, {
-  id: '100002',
-  parent: '001',
-  icon: img2
-}, {
-  id: '100003',
-  parent: '001',
-  icon: img2
-}]
+import { userGroup, useUserGroup } from "./users";
+const groups = readonly(useUserGroup(userGroup));
+console.log(groups);
+type User = (typeof groups)[string][number];
 
 const GridCard = defineComponent({
-  name: 'GridCard',
+  name: "GridCard",
+  props: {
+    data: {
+      type: Object,
+      default: () => null,
+    },
+  },
   setup(props, { slots }) {
     return () =>
-      h('div', { class: 'grid-card' }, slots.default && slots.default())
-  }
-})
+      h("div", { class: "grid-card" }, [
+        h(GridMain, {
+          data: props?.data[0],
+        }),
+        props.data?.map((item) =>
+          h(GridCell, {
+            data: item,
+          })
+        ),
+      ]);
+  },
+});
 const GridCell = defineComponent({
-  name: 'GridCell',
+  name: "GridCell",
   props: {
-    icon: {
-      type: String,
-      default: () => ''
-    },
     draggable: {
       type: Boolean,
-      default: () => true
-    }
+      default: () => true,
+    },
+    data: {
+      type: Object,
+      default: () => null,
+    },
   },
   setup(props, { slots }) {
     const dragstart = (event: DragEvent) => {
-      event.dataTransfer?.setData('text/plan', '001')
-    }
+      event.dataTransfer?.setData("text/plan", JSON.stringify(props.data));
+    };
     return () =>
       h(
-        'div',
+        "div",
         {
           draggable: props.draggable,
           onDragstart: dragstart,
-          class: 'grid-cell',
+          class: "grid-cell",
           style: {
-            backgroundImage: props.icon && `url(${props.icon})`
-          }
+            backgroundImage: props?.data?.icon && `url(${props.data.icon})`,
+          },
         },
         slots.default && slots.default()
-      )
-  }
-})
+      );
+  },
+});
 
 const GridBanner = defineComponent({
-  name: 'GridBanner',
+  name: "GridBanner",
   props: {
-    app: {
+    data: {
       type: Object,
-      default: () => null
-    }
+      default: () => null,
+    },
   },
-  setup(props, { slots }) {
-    const app = [
-      {
-        icon: img
-      },
-      {
-        icon: img
-      },
-      {
-        icon: img
-      },
-      {
-        icon: img
+  setup(props) {
+    const apps = computed(() => props.data.value.children || []);
+    const status = computed(() => {
+      if (props.data.value) {
+        return (
+          props.data?.value?.name +
+          " " +
+          props.data.value.children.map((item) => item.name).join(" ")
+        );
       }
-    ]
-    const apps = computed(() => props.app.value || app)
+      return props.data?.value?.name;
+    });
 
     return {
-      apps
-    }
-
+      apps,
+      status,
+    };
   },
   render() {
-    console.log(this.apps)
     return h(
-      'div',
+      "div",
       {
-        class: 'grid-banner grid-cell'
+        class: "grid-banner grid-cell",
       },
       [
         h(
-          'div',
+          "div",
           {
-            class: 'grid-banner-content'
+            class: "grid-banner-content",
           },
-          this.apps.map((_app) => h(GridCell, { icon: _app.icon, draggable: false }))
+          this.apps?.map((_app) =>
+            h(GridCell, { data: _app, draggable: false })
+          )
         ),
         h(
-          'div',
+          "div",
           {
-            class: 'grid-banner-status'
+            class: "grid-banner-status",
           },
-          '虾仁不眨眼！ 游戏 视频 动漫'
-        )
+          this.status
+        ),
       ]
-    )
-  }
-})
+    );
+  },
+});
 
 const GridMain = defineComponent({
-  name: 'GridMain',
+  name: "GridMain",
+  props: {
+    data: {
+      type: Object as PropType<User>,
+      default: () => null,
+    },
+  },
   setup(props, { slots }) {
     const dragover = (event: DragEvent) => {
-      event.preventDefault()
-    }
-    const elRef = ref(null)
-    const child: any = ref(null);
-    const theme = ref(false);
-    const drop = (event: DragEvent) => {
-      event.preventDefault()
-      const data = event.dataTransfer?.getData('text/plan')
-      child.value = child.value ? null : users.filter(item => data == item.parent);
-      theme.value = !theme.value
+      event.preventDefault();
+    };
+    const elRef = ref(null);
 
-    }
+    const theme = ref(false);
+    const status = ref("");
+    const user = ref(props.data);
+    const child: any = ref(props.data.children);
+    const _user = computed(() => {
+      return user.value;
+    });
+    const drop = (event: DragEvent) => {
+      event.preventDefault();
+      let data: any = event.dataTransfer?.getData("text/plan");
+      if (data) {
+        data = JSON.parse(data);
+      }
+      user.value = data;
+      child.value = data.children;
+      status.value = data.children.map((item: any) => item.name).join(" ");
+    };
+
     return () =>
       h(
-        'div',
+        "div",
         {
-          class: ['grid-main', theme.value ? 'theme' : ''],
+          class: ["grid-main", theme.value ? "theme" : ""],
           onDragover: dragover,
           onDrop: drop,
-          ref: elRef
+          ref: elRef,
+          style: {
+            gridArea: "1/1/3/-1",
+          },
         },
         [
           h(GridCell, {
             draggable: false,
-            icon: img,
+            data: _user.value,
             style: {
-              gridArea: '1/1/span 2/span 2'
-            }
+              gridArea: "1/1/span 2/span 2",
+            },
           }),
           h(GridBanner, {
-            app: toRaw(child),
+            data: _user,
             style: {
-              gridArea: '1/3/span 2/ -1'
-            }
-          })
+              gridArea: "1/3/span 2/ -1",
+            },
+          }),
         ]
-      )
-  }
-})
+      );
+  },
+});
+
+const op = ref("223");
+console.log(op.value);
+const op2 = unref(op);
+op.value = "000000";
+console.log(op.value);
+console.log(op2);
 </script>
 
 <style lang="scss">
@@ -196,7 +214,6 @@ $padding: 10px;
 $width: $size * 7 + $gap * (7-1) + $padding * 2;
 // 卡片高度
 $height: $size * 3 + $gap * (3-1) + $padding * 2;
-
 
 .dark {
   // color-scheme: dark;
@@ -243,8 +260,6 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     border-radius: 4px;
     overflow: hidden;
     background-size: 100% 100%;
-
-
   }
 
   &-main.theme &-cell {
