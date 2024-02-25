@@ -35,8 +35,6 @@ export interface User extends UserBase {
   children?: UserBase[];
 }
 
-
-
 /**
  * 获取用户分组
  */

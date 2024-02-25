@@ -203,13 +203,12 @@ const GridGroup = defineComponent({
       );
   },
 });
-const groups:any = ref<User[]>([]);
+const groups = ref<Record<string, User[]>>();
 onMounted(() => {
   fetch("/public/userData.js")
     .then((res) => res.text())
     .then((res) => {
       let users = Function(`return ${res}`)();
-      //@ts-ignore
       groups.value = useUserGroup(users);
     });
 });
