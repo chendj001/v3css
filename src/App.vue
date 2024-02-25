@@ -1,75 +1,46 @@
 <template>
   <div class="grid">
     <div class="grid-layout">
-      <GridCard :data="users" v-for="(users, index) in groups" :key="index">
-      </GridCard>
+      <GridGroup :data="users" v-for="(users, index) in groups" :key="index">
+      </GridGroup>
     </div>
   </div>
 </template>
 
 <script setup lang="ts" name="App">
-import {
-  defineComponent,
-  h,
-  ref,
-  toRaw,
-  computed,
-  type PropType,
-  unref,
-  readonly,
-} from "vue";
-
+import { defineComponent, readonly, type PropType, h, computed } from "vue";
 import { userGroup, useUserGroup } from "./users";
 const groups = readonly(useUserGroup(userGroup));
-console.log(groups);
 type User = (typeof groups)[string][number];
 
-const GridCard = defineComponent({
-  name: "GridCard",
+/**
+ * 用户组件
+ */
+const GridUser = defineComponent({
+  name: "GridUser",
   props: {
     data: {
-      type: Object,
-      default: () => null,
+      type: Object as PropType<User>,
     },
-  },
-  setup(props, { slots }) {
-    return () =>
-      h("div", { class: "grid-card" }, [
-        h(GridMain, {
-          data: props?.data[0],
-        }),
-        props.data?.map((item) =>
-          h(GridCell, {
-            data: item,
-          })
-        ),
-      ]);
-  },
-});
-const GridCell = defineComponent({
-  name: "GridCell",
-  props: {
+    /**
+     * 是否允许拖拽-默认false
+     */
     draggable: {
       type: Boolean,
       default: () => true,
     },
-    data: {
-      type: Object,
-      default: () => null,
-    },
   },
   setup(props, { slots }) {
-    const dragstart = (event: DragEvent) => {
-      event.dataTransfer?.setData("text/plan", JSON.stringify(props.data));
-    };
     return () =>
       h(
-        "div",
+        "a",
         {
+          class: "grid-user",
+          href: props.data?.url || "javascript:void(0)",
+          target: props.data?.url && "_blank",
           draggable: props.draggable,
-          onDragstart: dragstart,
-          class: "grid-cell",
           style: {
+            backgroundColor: props?.data?.icon && "transparent",
             backgroundImage: props?.data?.icon && `url(${props.data.icon})`,
           },
         },
@@ -77,58 +48,49 @@ const GridCell = defineComponent({
       );
   },
 });
-
 const GridBanner = defineComponent({
   name: "GridBanner",
   props: {
     data: {
-      type: Object,
+      type: Object as PropType<User>,
       default: () => null,
     },
   },
   setup(props) {
-    const apps = computed(() => props.data.value.children || []);
-    const status = computed(() => {
-      if (props.data.value) {
+    const cChildren = computed(() => props.data.children || []);
+    const cStatus = computed(() => {
+      if (props.data.children) {
         return (
-          props.data?.value?.name +
-          " " +
-          props.data.value.children.map((item) => item.name).join(" ")
+          props.data.name +
+          "--" +
+          props.data.children.map((user) => user.name).join(" ")
         );
       }
-      return props.data?.value?.name;
+      return props.data.name;
     });
-
-    return {
-      apps,
-      status,
-    };
-  },
-  render() {
-    return h(
-      "div",
-      {
-        class: "grid-banner grid-cell",
-      },
-      [
-        h(
-          "div",
-          {
-            class: "grid-banner-content",
-          },
-          this.apps?.map((_app) =>
-            h(GridCell, { data: _app, draggable: false })
-          )
-        ),
-        h(
-          "div",
-          {
-            class: "grid-banner-status",
-          },
-          this.status
-        ),
-      ]
-    );
+    return () =>
+      h(
+        "div",
+        {
+          class: "grid-banner",
+        },
+        [
+          h(
+            "div",
+            {
+              class: "grid-banner-content",
+            },
+            cChildren.value?.map((user) => h(GridUser, { data: user,draggable:false }))
+          ),
+          h(
+            "div",
+            {
+              class: "grid-banner-status",
+            },
+            cStatus.value
+          ),
+        ]
+      );
   },
 });
 
@@ -140,67 +102,62 @@ const GridMain = defineComponent({
       default: () => null,
     },
   },
-  setup(props, { slots }) {
-    const dragover = (event: DragEvent) => {
-      event.preventDefault();
-    };
-    const elRef = ref(null);
-
-    const theme = ref(false);
-    const status = ref("");
-    const user = ref(props.data);
-    const child: any = ref(props.data.children);
-    const _user = computed(() => {
-      return user.value;
-    });
-    const drop = (event: DragEvent) => {
-      event.preventDefault();
-      let data: any = event.dataTransfer?.getData("text/plan");
-      if (data) {
-        data = JSON.parse(data);
-      }
-      user.value = data;
-      child.value = data.children;
-      status.value = data.children.map((item: any) => item.name).join(" ");
-    };
-
+  setup(props) {
     return () =>
       h(
         "div",
         {
-          class: ["grid-main", theme.value ? "theme" : ""],
-          onDragover: dragover,
-          onDrop: drop,
-          ref: elRef,
-          style: {
-            gridArea: "1/1/3/-1",
-          },
+          class: "grid-main",
         },
         [
-          h(GridCell, {
-            draggable: false,
-            data: _user.value,
+          h(GridUser, {
+            data: props.data,
+            draggable:false,
             style: {
               gridArea: "1/1/span 2/span 2",
             },
           }),
           h(GridBanner, {
-            data: _user,
+            data: props.data,
             style: {
-              gridArea: "1/3/span 2/ -1",
+              gridArea: "1/3/span 2/-1",
             },
           }),
         ]
       );
   },
 });
-
-const op = ref("223");
-console.log(op.value);
-const op2 = unref(op);
-op.value = "000000";
-console.log(op.value);
-console.log(op2);
+const GridGroup = defineComponent({
+  name: "GridGroup",
+  props: {
+    /**
+     * 对象数组
+     */
+    data: {
+      type: Array as PropType<User[]>,
+      default: () => [],
+    },
+  },
+  setup(props) {
+    return () =>
+      h(
+        "div",
+        {
+          class: "grid-group",
+        },
+        [
+          h(GridMain, {
+            data: props.data[0],
+          }),
+          props.data.map((user) =>
+            h(GridUser, {
+              data: user,
+            })
+          ),
+        ]
+      );
+  },
+});
 </script>
 
 <style lang="scss">
@@ -214,16 +171,9 @@ $padding: 10px;
 $width: $size * 7 + $gap * (7-1) + $padding * 2;
 // 卡片高度
 $height: $size * 3 + $gap * (3-1) + $padding * 2;
-
-.dark {
-  // color-scheme: dark;
-  background-color: #121212;
-}
-
 .grid {
   container-type: inline-size;
   padding-top: 20px;
-
   &-layout {
     display: grid;
     grid-template-columns: repeat(4, $width);
@@ -232,8 +182,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     gap: $gap * 2;
     @include ContainerGrid($width, 4, $gap, 10px);
   }
-
-  &-card {
+  &-group {
     width: $width;
     height: $height;
     background: rgba($theme, 0.16);
@@ -244,32 +193,17 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     gap: $gap;
     padding: $padding;
   }
-
-  &-cell {
-    background: $theme;
-    border-radius: 4px;
-    overflow: hidden;
-    background-size: 100% 100%;
-    cursor: pointer;
-  }
-
   &-main {
+    grid-area: 1/1/3/-1;
     display: grid;
-    gap: $gap;
     grid-template-columns: repeat(7, 1fr);
-    border-radius: 4px;
-    overflow: hidden;
-    background-size: 100% 100%;
+    gap: $gap;
   }
-
-  &-main.theme &-cell {
-    background-color: #ff5c00;
-  }
-
   &-banner {
     display: grid;
     grid-template-rows: repeat(3, 1fr);
-
+    background-color: $theme;
+    border-radius: 4px;
     &-content {
       grid-area: 1/1 / span 2/-1;
       display: grid;
@@ -277,7 +211,6 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       grid-template-columns: repeat(4, 1fr);
       gap: $gap;
     }
-
     &-status {
       display: grid;
       align-items: center;
@@ -285,11 +218,12 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       font-size: 12px;
     }
   }
-
-  &-img {
-    display: block;
-    width: 100%;
-    margin: 0 auto;
+  &-user {
+    background-color: $theme;
+    border-radius: 4px;
+    overflow: hidden;
+    background-size: 100% 100%;
+    cursor: pointer;
   }
 }
 </style>
