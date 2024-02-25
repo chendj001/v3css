@@ -1,0 +1,1 @@
+const dynamicFunction = new Function(data);

@@ -8,11 +8,16 @@
 </template>
 
 <script setup lang="ts" name="App">
-import { defineComponent, type PropType, h, computed, ref, unref } from "vue";
-import { userGroup, useUserGroup } from "./users";
-const groups = useUserGroup(userGroup);
-type User = (typeof groups)[string][number];
-
+import {
+  defineComponent,
+  type PropType,
+  h,
+  computed,
+  ref,
+  unref,
+  onMounted,
+} from "vue";
+import { useUserGroup, type User } from "@/utils";
 /**
  * 用户组件
  */
@@ -37,9 +42,9 @@ const GridUser = defineComponent({
     };
     const svgToBase64 = (svg: string) => {
       if (svg.startsWith("<svg")) {
-        return (
-          `url("data:image/svg+xml;base64,${btoa(decodeURIComponent(encodeURIComponent(svg)))}")`
-        );
+        return `url("data:image/svg+xml;base64,${btoa(
+          decodeURIComponent(encodeURIComponent(svg))
+        )}")`;
       } else {
         return `url(${svg})`;
       }
@@ -54,8 +59,7 @@ const GridUser = defineComponent({
           draggable: props.draggable,
           style: {
             backgroundColor: props?.data?.icon && "transparent",
-            backgroundImage:
-              props?.data?.icon && svgToBase64(props.data.icon),
+            backgroundImage: props?.data?.icon && svgToBase64(props.data.icon),
           },
           onDragstart: dragstart,
         },
@@ -72,17 +76,20 @@ const GridBanner = defineComponent({
     },
   },
   setup(props) {
+    const desc = [props.data.name, ...(props?.data?.status || [])].join(
+      "\t|\t"
+    );
+    const title = ref(desc);
     const cChildren = computed(() => props.data.children || []);
     const cStatus = computed(() => {
-      if (props.data.children) {
-        return (
-          props.data.name +
-          "--" +
-          props.data.children.map((user) => user.name).join(" ")
-        );
-      }
-      return props.data.name;
+      return title.value;
     });
+    const onMouseenter = (user: User) => {
+      title.value = [user.name].join("\t|\t");
+    };
+    const onMouseleave = () => {
+      title.value = desc;
+    };
     return () =>
       h(
         "div",
@@ -96,7 +103,12 @@ const GridBanner = defineComponent({
               class: "grid-banner-content",
             },
             cChildren.value?.map((user) =>
-              h(GridUser, { data: user, draggable: false })
+              h(GridUser, {
+                data: user,
+                draggable: false,
+                onMouseleave,
+                onMouseenter: () => onMouseenter(user),
+              })
             )
           ),
           h(
@@ -191,6 +203,16 @@ const GridGroup = defineComponent({
       );
   },
 });
+const groups:any = ref<User[]>([]);
+onMounted(() => {
+  fetch("/public/userData.js")
+    .then((res) => res.text())
+    .then((res) => {
+      let users = Function(`return ${res}`)();
+      //@ts-ignore
+      groups.value = useUserGroup(users);
+    });
+});
 </script>
 
 <style lang="scss">
@@ -244,13 +266,12 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       grid-area: 1/1 / span 2/-1;
       display: grid;
       padding: 10px 10px 0;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: $gap;
     }
     &-status {
       display: grid;
-      align-items: center;
-      padding: 0 10px;
+      padding: 2px 10px;
       font-size: 12px;
     }
   }
