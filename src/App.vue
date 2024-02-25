@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts" name="App">
-import { defineComponent, readonly, type PropType, h, computed } from "vue";
+import { defineComponent, type PropType, h, computed, ref, unref } from "vue";
 import { userGroup, useUserGroup } from "./users";
-const groups = readonly(useUserGroup(userGroup));
+const groups = useUserGroup(userGroup);
 type User = (typeof groups)[string][number];
 
 /**
@@ -31,6 +31,10 @@ const GridUser = defineComponent({
     },
   },
   setup(props, { slots }) {
+    // 开始拖拽
+    const dragstart = (event: DragEvent) => {
+      event.dataTransfer?.setData("userData", JSON.stringify(props.data));
+    };
     return () =>
       h(
         "a",
@@ -43,6 +47,7 @@ const GridUser = defineComponent({
             backgroundColor: props?.data?.icon && "transparent",
             backgroundImage: props?.data?.icon && `url(${props.data.icon})`,
           },
+          onDragstart: dragstart,
         },
         slots.default && slots.default()
       );
@@ -80,7 +85,9 @@ const GridBanner = defineComponent({
             {
               class: "grid-banner-content",
             },
-            cChildren.value?.map((user) => h(GridUser, { data: user,draggable:false }))
+            cChildren.value?.map((user) =>
+              h(GridUser, { data: user, draggable: false })
+            )
           ),
           h(
             "div",
@@ -103,22 +110,38 @@ const GridMain = defineComponent({
     },
   },
   setup(props) {
+    const oData = ref(props.data);
+    const cData = computed(() => oData);
+    const dragover = (event: DragEvent) => {
+      event.preventDefault();
+    };
+
+    const drop = (event: DragEvent) => {
+      event.preventDefault();
+      let strData: any = event.dataTransfer?.getData("userData");
+      let sData = JSON.parse(strData) as User;
+      if (sData.group == props.data.group) {
+        oData.value = sData;
+      }
+    };
     return () =>
       h(
         "div",
         {
-          class: "grid-main",
+          class: ["grid-main"],
+          onDragover: dragover,
+          onDrop: drop,
         },
         [
           h(GridUser, {
-            data: props.data,
-            draggable:false,
+            data: unref(cData.value),
+            draggable: false,
             style: {
               gridArea: "1/1/span 2/span 2",
             },
           }),
           h(GridBanner, {
-            data: props.data,
+            data: unref(cData.value),
             style: {
               gridArea: "1/3/span 2/-1",
             },
@@ -198,6 +221,9 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: $gap;
+    &.over {
+      outline: 2px dashed $theme;
+    }
   }
   &-banner {
     display: grid;
