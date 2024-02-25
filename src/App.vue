@@ -35,6 +35,15 @@ const GridUser = defineComponent({
     const dragstart = (event: DragEvent) => {
       event.dataTransfer?.setData("userData", JSON.stringify(props.data));
     };
+    const svgToBase64 = (svg: string) => {
+      if (svg.startsWith("<svg")) {
+        return (
+          `url("data:image/svg+xml;base64,${btoa(decodeURIComponent(encodeURIComponent(svg)))}")`
+        );
+      } else {
+        return `url(${svg})`;
+      }
+    };
     return () =>
       h(
         "a",
@@ -45,7 +54,8 @@ const GridUser = defineComponent({
           draggable: props.draggable,
           style: {
             backgroundColor: props?.data?.icon && "transparent",
-            backgroundImage: props?.data?.icon && `url(${props.data.icon})`,
+            backgroundImage:
+              props?.data?.icon && svgToBase64(props.data.icon),
           },
           onDragstart: dragstart,
         },
