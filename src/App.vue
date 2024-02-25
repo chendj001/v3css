@@ -209,6 +209,7 @@ onMounted(() => {
     .then((res) => res.text())
     .then((res) => {
       let users = Function(`return ${res}`)();
+      localStorage.setItem('users',JSON.stringify(users))
       groups.value = useUserGroup(users);
     });
 });
@@ -278,7 +279,8 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     background-color: $theme;
     border-radius: 4px;
     overflow: hidden;
-    background-size: 100% 100%;
+    background-size: 100%;
+    background-repeat: no-repeat;
     cursor: pointer;
   }
 }

@@ -25,7 +25,7 @@
     name: "抖音",
     id: "100003",
     url: "",
-    icon: "",
+    icon: "https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico",
     parentId: "parent_001",
   },
   {
