@@ -76,10 +76,11 @@ const GridBanner = defineComponent({
     },
   },
   setup(props) {
-    const desc = [props.data.name, ...(props?.data?.status || [])].join(
+    const desc = computed(() => [props.data.name, ...(props?.data?.status || [])].join(
       "\t|\t"
-    );
-    const title = ref(desc);
+    ));
+
+    const title = ref(desc.value);
     const cChildren = computed(() => props.data.children || []);
     const cStatus = computed(() => {
       return title.value;
@@ -88,7 +89,7 @@ const GridBanner = defineComponent({
       title.value = [user.name].join("\t|\t");
     };
     const onMouseleave = () => {
-      title.value = desc;
+      title.value = desc.value;
     };
     return () =>
       h(
@@ -133,7 +134,7 @@ const GridMain = defineComponent({
   },
   setup(props) {
     const oData = ref(props.data);
-    const cData = computed(() => oData);
+    const cData = computed(() => oData.value);
     const dragover = (event: DragEvent) => {
       event.preventDefault();
     };
@@ -184,6 +185,7 @@ const GridGroup = defineComponent({
     },
   },
   setup(props) {
+    const cData = computed(() => props.data);
     return () =>
       h(
         "div",
@@ -192,9 +194,9 @@ const GridGroup = defineComponent({
         },
         [
           h(GridMain, {
-            data: props.data[0],
+            data: cData.value[0],
           }),
-          props.data.map((user) =>
+          cData.value.map((user) =>
             h(GridUser, {
               data: user,
             })
@@ -204,13 +206,43 @@ const GridGroup = defineComponent({
   },
 });
 const groups = ref<Record<string, User[]>>();
+let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7';
 onMounted(() => {
-  fetch("/public/userData.js")
-    .then((res) => res.text())
+  let lUsers: any = localStorage.getItem('users')
+  if (lUsers) {
+    lUsers = JSON.parse(lUsers)
+    groups.value = useUserGroup(lUsers);
+  }
+  let lUpdateAt: any = localStorage.getItem('updated_at')
+  if (lUpdateAt) {
+    lUpdateAt = Number(lUpdateAt)
+  }
+  let sUpdateAt = 0
+  fetch("https://api.github.com/repos/chendj001/v3css/issues/1/comments", {
+    headers: {
+      'Authorization': `token ${token.replace(/XXXX/gm, '')}`,
+    },
+    cache: "no-cache"
+  })
+    .then((res) => res.json())
     .then((res) => {
-      let users = Function(`return ${res}`)();
-      localStorage.setItem('users',JSON.stringify(users))
-      groups.value = useUserGroup(users);
+      let oList: any = []
+      let updateList: any = []
+      res.map((item: any) => {
+        updateList.push(new Date(item.updated_at || item.created_at).getTime())
+        try {
+          oList.push(new Function(`return ${item.body}`)())
+        } catch (error) {
+          console.log('出错了', item)
+        }
+      })
+      sUpdateAt = Math.max(...updateList)
+      if (sUpdateAt > lUpdateAt) {
+        groups.value = useUserGroup(oList);
+        localStorage.setItem('users', JSON.stringify(oList))
+        localStorage.setItem('updated_at', sUpdateAt + '')
+        console.log('更新了')
+      }
     });
 });
 </script>
@@ -226,9 +258,11 @@ $padding: 10px;
 $width: $size * 7 + $gap * (7-1) + $padding * 2;
 // 卡片高度
 $height: $size * 3 + $gap * (3-1) + $padding * 2;
+
 .grid {
   container-type: inline-size;
   padding-top: 20px;
+
   &-layout {
     display: grid;
     grid-template-columns: repeat(4, $width);
@@ -237,6 +271,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     gap: $gap * 2;
     @include ContainerGrid($width, 4, $gap, 10px);
   }
+
   &-group {
     width: $width;
     height: $height;
@@ -248,20 +283,24 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     gap: $gap;
     padding: $padding;
   }
+
   &-main {
     grid-area: 1/1/3/-1;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: $gap;
+
     &.over {
       outline: 2px dashed $theme;
     }
   }
+
   &-banner {
     display: grid;
     grid-template-rows: repeat(3, 1fr);
     background-color: $theme;
     border-radius: 4px;
+
     &-content {
       grid-area: 1/1 / span 2/-1;
       display: grid;
@@ -269,12 +308,14 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       grid-template-columns: repeat(5, 1fr);
       gap: $gap;
     }
+
     &-status {
       display: grid;
       padding: 2px 10px;
       font-size: 12px;
     }
   }
+
   &-user {
     background-color: $theme;
     border-radius: 4px;
