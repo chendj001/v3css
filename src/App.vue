@@ -1,10 +1,12 @@
 <template>
+  <div class="show" @click="show = true">🤖</div>
   <div class="grid">
     <div class="grid-layout">
       <GridGroup :data="users" v-for="(users, index) in groups" :key="index">
       </GridGroup>
     </div>
   </div>
+  <Dialog v-if="show"></Dialog>
 </template>
 
 <script setup lang="ts" name="App">
@@ -76,9 +78,9 @@ const GridBanner = defineComponent({
     },
   },
   setup(props) {
-    const desc = computed(() => [props.data.name, ...(props?.data?.status || [])].join(
-      "\t|\t"
-    ));
+    const desc = computed(() =>
+      [props.data.name, ...(props?.data?.status || [])].join("\t|\t")
+    );
 
     const title = ref(desc.value);
     const cChildren = computed(() => props.data.children || []);
@@ -205,44 +207,186 @@ const GridGroup = defineComponent({
       );
   },
 });
+
+const Dialog = defineComponent({
+  name: "Dilaog",
+  setup() {
+    const optionsGroup = [];
+    const optionsId = [];
+    console.log(groups.value);
+    for (let key in groups.value) {
+      let item = groups.value[key];
+      item.map((cell) => {
+        optionsId.push({
+          label: cell.id,
+          value: cell.id,
+        });
+      });
+      optionsGroup.push({
+        label: key,
+        value: key,
+      });
+    }
+    optionsId.push({
+      label: "新的父类",
+      value: String(optionsId.length + 1).padStart(3, "0"),
+    });
+
+    optionsGroup.push({
+      label: "新的分组",
+      value: "group_1000" + (optionsGroup.length + 1),
+    });
+    const list = ref([
+      {
+        label: "分组",
+        name: "group",
+        type: "select",
+        options: optionsGroup,
+      },
+      {
+        label: "父类",
+        name: "parent",
+        type: "select",
+        options: optionsId,
+      },
+      {
+        label: "id",
+        name: "id",
+        type: "input",
+      },
+      {
+        label: "名称",
+        name: "name",
+        type: "input",
+      },
+      {
+        label: "图标",
+        name: "icon",
+        type: "input",
+      },
+      {
+        label: "链接",
+        name: "url",
+        type: "input",
+      },
+      {
+        label: "分类",
+        name: "status",
+        type: "input",
+      },
+    ]);
+    const baseForm = list.value.reduce((prev, curr) => {
+      prev[curr.name] = "";
+      return prev;
+    }, {} as Record<string, string>);
+    const form = ref(baseForm);
+    const click = () => {
+      let postData = {
+        ...unref(form),
+        status: form.value.status.split(" "),
+      };
+      fetch("https://api.github.com/repos/chendj001/v3css/issues/1/comments", {
+        method: "POST",
+        headers: {
+          Authorization: `token ${token.replace(/XXXX/gm, "")}`,
+        },
+        cache: "no-cache",
+        body: JSON.stringify({
+          body: JSON.stringify(unref(form)),
+        }),
+      }).finally(() => {
+        show.value = false;
+      });
+    };
+    onMounted(() => {
+      console.log(groups.value);
+    });
+    return () =>
+      h(
+        "div",
+        {
+          class: "dialog",
+        },
+        [
+          h("div", { class: "dialog-mask" }),
+          h(
+            "div",
+            { class: "dialog-content" },
+            h("div", { class: "dialog-form" }, [
+              list.value.map((item) =>
+                h("div", { class: "dialog-form-item" }, [
+                  h("div", { class: "dialog-form-label" }, item.label),
+                  item.type == "select" &&
+                    h(
+                      "select",
+                      {
+                        class: "dialog-form-com dialog-input",
+                        placeholder: "请输入",
+                        value: form.value[item.name],
+                        onChange: (e: MouseEvent) =>
+                          (form.value[item.name] = e?.target?.value),
+                      },
+                      item.options?.map((option) =>
+                        h("option", { value: option.value }, option.label)
+                      )
+                    ),
+                  item.type == "input" &&
+                    h("input", {
+                      class: "dialog-form-com dialog-input",
+                      placeholder: "请输入",
+                      value: form.value[item.name],
+                      onInput: (e: MouseEvent) =>
+                        (form.value[item.name] = e?.target?.value),
+                    }),
+                ])
+              ),
+              h("div", { class: "dialog-btn", onClick: click }, "确定"),
+            ])
+          ),
+        ]
+      );
+  },
+});
+const show = ref(false);
 const groups = ref<Record<string, User[]>>();
-let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7';
+let token = "ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7";
 onMounted(() => {
-  let lUsers: any = localStorage.getItem('users')
+  let lUsers: any = localStorage.getItem("users");
   if (lUsers) {
-    lUsers = JSON.parse(lUsers)
+    lUsers = JSON.parse(lUsers);
     groups.value = useUserGroup(lUsers);
   }
-  let lUpdateAt: any = localStorage.getItem('updated_at')
+  let lUpdateAt: any = localStorage.getItem("updated_at");
   if (lUpdateAt) {
-    lUpdateAt = Number(lUpdateAt)
+    lUpdateAt = Number(lUpdateAt);
   }
-  let sUpdateAt = 0
+  let sUpdateAt = 0;
   fetch("https://api.github.com/repos/chendj001/v3css/issues/1/comments", {
     headers: {
-      'Authorization': `token ${token.replace(/XXXX/gm, '')}`,
+      Authorization: `token ${token.replace(/XXXX/gm, "")}`,
     },
-    cache: "no-cache"
+    cache: "no-cache",
   })
     .then((res) => res.json())
     .then((res) => {
-      let oList: any = []
-      let updateList: any = []
+      let oList: any = [];
+      let updateList: any = [];
       res.map((item: any) => {
-        updateList.push(new Date(item.updated_at || item.created_at).getTime())
+        updateList.push(new Date(item.updated_at || item.created_at).getTime());
         try {
-          oList.push(new Function(`return ${item.body}`)())
+          oList.push(new Function(`return ${item.body}`)());
         } catch (error) {
-          console.log('出错了', item)
+          console.log("出错了", item);
         }
-      })
-      sUpdateAt = Math.max(...updateList)
+      });
+      sUpdateAt = Math.max(...updateList);
       if (sUpdateAt > lUpdateAt) {
         groups.value = useUserGroup(oList);
-        localStorage.setItem('users', JSON.stringify(oList))
-        localStorage.setItem('updated_at', sUpdateAt + '')
-        console.log('更新了')
+        localStorage.setItem("users", JSON.stringify(oList));
+        localStorage.setItem("updated_at", sUpdateAt + "");
+        console.log("更新了");
       }
+      // show.value = true;
     });
 });
 </script>
@@ -323,6 +467,74 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     background-size: 100%;
     background-repeat: no-repeat;
     cursor: pointer;
+  }
+}
+.dialog {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+  &-mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(#000, 0.2);
+  }
+  &-content {
+    position: absolute;
+    width: 600px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 4px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  &-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    &-item {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+    }
+    &-label {
+      grid-area: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    &-com {
+      grid-area: 1/2/-1/-1;
+    }
+  }
+  &-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $theme;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &-input {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid $theme;
+    padding: 0 10px;
+    outline: none;
   }
 }
 </style>
