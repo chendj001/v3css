@@ -327,6 +327,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     cursor: pointer;
   }
 }
+
 .dialog {
   position: fixed;
   left: 0;
@@ -334,6 +335,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
   width: 100%;
   height: 100%;
   z-index: 9;
+
   &-mask {
     position: absolute;
     left: 0;
@@ -342,6 +344,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     height: 100%;
     background-color: rgba(#000, 0.2);
   }
+
   &-content {
     position: absolute;
     width: 600px;
@@ -352,26 +355,31 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     top: 50%;
     transform: translate(-50%, -50%);
   }
+
   &-form {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(1, 1fr);
     gap: 10px;
+
     &-item {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       gap: 10px;
     }
+
     &-label {
       grid-area: 1/1;
       display: flex;
       align-items: center;
       justify-content: flex-end;
     }
+
     &-com {
       grid-area: 1/2/-1/-1;
     }
   }
+
   &-btn {
     display: flex;
     align-items: center;
