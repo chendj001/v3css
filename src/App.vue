@@ -1,12 +1,10 @@
 <template>
-  <div class="show" @click="show = true">🤖</div>
   <div class="grid">
     <div class="grid-layout">
       <GridGroup :data="users" v-for="(users, index) in groups" :key="index">
       </GridGroup>
     </div>
   </div>
-  <Dialog v-if="show"></Dialog>
 </template>
 
 <script setup lang="ts" name="App">
@@ -208,146 +206,6 @@ const GridGroup = defineComponent({
   },
 });
 
-const Dialog = defineComponent({
-  name: "Dilaog",
-  setup() {
-    const optionsGroup = [];
-    const optionsId = [];
-    console.log(groups.value);
-    for (let key in groups.value) {
-      let item = groups.value[key];
-      item.map((cell) => {
-        optionsId.push({
-          label: cell.id,
-          value: cell.id,
-        });
-      });
-      optionsGroup.push({
-        label: key,
-        value: key,
-      });
-    }
-    optionsId.push({
-      label: "新的父类",
-      value: String(optionsId.length + 1).padStart(3, "0"),
-    });
-
-    optionsGroup.push({
-      label: "新的分组",
-      value: "group_1000" + (optionsGroup.length + 1),
-    });
-    const list = ref([
-      {
-        label: "分组",
-        name: "group",
-        type: "select",
-        options: optionsGroup,
-      },
-      {
-        label: "父类",
-        name: "parent",
-        type: "select",
-        options: optionsId,
-      },
-      {
-        label: "id",
-        name: "id",
-        type: "input",
-      },
-      {
-        label: "名称",
-        name: "name",
-        type: "input",
-      },
-      {
-        label: "图标",
-        name: "icon",
-        type: "input",
-      },
-      {
-        label: "链接",
-        name: "url",
-        type: "input",
-      },
-      {
-        label: "分类",
-        name: "status",
-        type: "input",
-      },
-    ]);
-    const baseForm = list.value.reduce((prev, curr) => {
-      prev[curr.name] = "";
-      return prev;
-    }, {} as Record<string, string>);
-    const form = ref(baseForm);
-    const click = () => {
-      let postData = {
-        ...unref(form),
-        status: form.value.status.split(" "),
-      };
-      fetch("https://api.github.com/repos/chendj001/v3css/issues/1/comments", {
-        method: "POST",
-        headers: {
-          Authorization: `token ${token.replace(/XXXX/gm, "")}`,
-        },
-        cache: "no-cache",
-        body: JSON.stringify({
-          body: JSON.stringify(unref(form)),
-        }),
-      }).finally(() => {
-        show.value = false;
-      });
-    };
-    onMounted(() => {
-      console.log(groups.value);
-    });
-    return () =>
-      h(
-        "div",
-        {
-          class: "dialog",
-        },
-        [
-          h("div", { class: "dialog-mask" }),
-          h(
-            "div",
-            { class: "dialog-content" },
-            h("div", { class: "dialog-form" }, [
-              list.value.map((item) =>
-                h("div", { class: "dialog-form-item" }, [
-                  h("div", { class: "dialog-form-label" }, item.label),
-                  item.type == "select" &&
-                    h(
-                      "select",
-                      {
-                        class: "dialog-form-com dialog-input",
-                        placeholder: "请输入",
-                        value: form.value[item.name],
-                        onChange: (e: MouseEvent) =>
-                          (form.value[item.name] = e?.target?.value),
-                      },
-                      item.options?.map((option) =>
-                        h("option", { value: option.value }, option.label)
-                      )
-                    ),
-                  item.type == "input" &&
-                    h("input", {
-                      class: "dialog-form-com dialog-input",
-                      placeholder: "请输入",
-                      value: form.value[item.name],
-                      onInput: (e: MouseEvent) =>
-                        (form.value[item.name] = e?.target?.value),
-                    }),
-                ])
-              ),
-              h("div", { class: "dialog-btn", onClick: click }, "确定"),
-            ])
-          ),
-        ]
-      );
-  },
-});
-const show = ref(false);
 const groups = ref<Record<string, User[]>>();
 let token = "ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7";
 onMounted(() => {
