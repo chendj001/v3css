@@ -4,6 +4,7 @@
       <GridGroup :data="users" v-for="(users, index) in groups" :key="index">
       </GridGroup>
       <GridLog></GridLog>
+      <GridScroll></GridScroll>
     </div>
   </div>
 </template>
@@ -224,12 +225,12 @@ const GridLog = defineComponent({
         value: '哪有小孩天天哭，哪有赌徒天天输！领域展开，坐杀搏徒。'
       },
       {
-        label:'君子爱财，取之有道。',
-        value:'我喜欢钱，所以拿走你的钱，这是很有道理的！'
+        label: '君子爱财，取之有道。',
+        value: '我喜欢钱，所以拿走你的钱，这是很有道理的！'
       },
       {
-        label:'既来之，则安之。',
-        value:'既然来到了这里，那么就安葬在这里吧。'
+        label: '既来之，则安之。',
+        value: '既然来到了这里，那么就安葬在这里吧。'
       }
     ])
     return () =>
@@ -249,6 +250,17 @@ const GridLog = defineComponent({
         ]
       )
   }
+})
+
+const GridScroll = defineComponent({
+  name: 'GridScroll',
+  setup(props, ctx) {
+    const oRef = ref(null)
+    onMounted(() => {
+    })
+    const data = ref(['HTML', 'CSS', 'JS', 'Animation', 'UI/UX'])
+    return () => h('div', { class: 'grid-scroll scroller', dataSpeed: 'fast', ref: oRef }, h('ul', { class: 'grid-scroll-list tag-list scroller__inner' }, data.value.map(item => h('li', { class: 'grid-scroll-item' }, item))))
+  },
 })
 
 const groups = ref<Record<string, User[]>>()
@@ -384,6 +396,23 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
 
     &-value {
       font-weight: bold;
+    }
+  }
+
+  &-scroll {
+    width: $width;
+    height: $height;
+    background: rgba($theme, 0.16);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #000;
+    position: relative;
+    overflow: hidden;
+    mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+
+    &-item {
+      display: inline-flex;
+      padding: 10px 20px;
     }
   }
 
