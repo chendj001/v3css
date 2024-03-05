@@ -220,12 +220,16 @@ const GridLog = defineComponent({
         value: 'unzip -O cp936'
       },
       {
-        label: 'Linux下zip文件解压乱码',
-        value: 'unzip -O cp936'
-      },
-      {
         label: 'All My People',
         value: '哪有小孩天天哭，哪有赌徒天天输！领域展开，坐杀搏徒。'
+      },
+      {
+        label:'君子爱财，取之有道。',
+        value:'我喜欢钱，所以拿走你的钱，这是很有道理的！'
+      },
+      {
+        label:'既来之，则安之。',
+        value:'既然来到了这里，那么就安葬在这里吧。'
       }
     ])
     return () =>
@@ -364,7 +368,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     &-item {
       background-color: rgba(#fff, 0.5);
       padding: 5px 10px;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
       border-radius: 6px;
 
       &:last-child {
@@ -375,6 +379,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     &-label {
       margin-bottom: 5px;
       user-select: none;
+      font-size: 14px;
     }
 
     &-value {
