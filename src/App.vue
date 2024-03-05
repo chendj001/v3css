@@ -3,6 +3,7 @@
     <div class="grid-layout">
       <GridGroup :data="users" v-for="(users, index) in groups" :key="index">
       </GridGroup>
+      <GridLog></GridLog>
     </div>
   </div>
 </template>
@@ -15,238 +16,278 @@ import {
   computed,
   ref,
   unref,
-  onMounted,
-} from "vue";
-import { useUserGroup, type User } from "@/utils";
+  onMounted
+} from 'vue'
+import { useUserGroup, type User } from '@/utils'
 /**
  * 用户组件
  */
 const GridUser = defineComponent({
-  name: "GridUser",
+  name: 'GridUser',
   props: {
     data: {
-      type: Object as PropType<User>,
+      type: Object as PropType<User>
     },
     /**
      * 是否允许拖拽-默认false
      */
     draggable: {
       type: Boolean,
-      default: () => true,
-    },
+      default: () => true
+    }
   },
   setup(props, { slots }) {
     // 开始拖拽
     const dragstart = (event: DragEvent) => {
-      event.dataTransfer?.setData("userData", JSON.stringify(props.data));
-    };
+      event.dataTransfer?.setData('userData', JSON.stringify(props.data))
+    }
     const svgToBase64 = (svg: string) => {
-      if (svg.startsWith("<svg")) {
+      if (svg.startsWith('<svg')) {
         return `url("data:image/svg+xml;base64,${btoa(
           decodeURIComponent(encodeURIComponent(svg))
-        )}")`;
+        )}")`
       } else {
-        return `url(${svg})`;
+        return `url(${svg})`
       }
-    };
+    }
     return () =>
       h(
-        "a",
+        'a',
         {
-          class: "grid-user",
-          href: props.data?.url || "javascript:void(0)",
-          target: props.data?.url && "_blank",
+          class: 'grid-user',
+          href: props.data?.url || 'javascript:void(0)',
+          target: props.data?.url && '_blank',
           draggable: props.draggable,
           style: {
-            backgroundColor: props?.data?.icon && "transparent",
-            backgroundImage: props?.data?.icon && svgToBase64(props.data.icon),
+            backgroundColor: props?.data?.icon && 'transparent',
+            backgroundImage: props?.data?.icon && svgToBase64(props.data.icon)
           },
-          onDragstart: dragstart,
+          onDragstart: dragstart
         },
         slots.default && slots.default()
-      );
-  },
-});
+      )
+  }
+})
 const GridBanner = defineComponent({
-  name: "GridBanner",
+  name: 'GridBanner',
   props: {
     data: {
       type: Object as PropType<User>,
-      default: () => null,
-    },
+      default: () => null
+    }
   },
   setup(props) {
     const desc = computed(() =>
-      [props.data.name, ...(props?.data?.status || [])].join("\t|\t")
-    );
+      [props.data.name, ...(props?.data?.status || [])].join('\t|\t')
+    )
 
-    const title = ref(desc.value);
-    const cChildren = computed(() => props.data.children || []);
+    const title = ref(desc.value)
+    const cChildren = computed(() => props.data.children || [])
     const cStatus = computed(() => {
-      return title.value;
-    });
+      return title.value
+    })
     const onMouseenter = (user: User) => {
-      title.value = [user.name].join("\t|\t");
-    };
+      title.value = [user.name].join('\t|\t')
+    }
     const onMouseleave = () => {
-      title.value = desc.value;
-    };
+      title.value = desc.value
+    }
     return () =>
       h(
-        "div",
+        'div',
         {
-          class: "grid-banner",
+          class: 'grid-banner'
         },
         [
           h(
-            "div",
+            'div',
             {
-              class: "grid-banner-content",
+              class: 'grid-banner-content'
             },
             cChildren.value?.map((user) =>
               h(GridUser, {
                 data: user,
                 draggable: false,
                 onMouseleave,
-                onMouseenter: () => onMouseenter(user),
+                onMouseenter: () => onMouseenter(user)
               })
             )
           ),
           h(
-            "div",
+            'div',
             {
-              class: "grid-banner-status",
+              class: 'grid-banner-status'
             },
             cStatus.value
-          ),
+          )
         ]
-      );
-  },
-});
+      )
+  }
+})
 
 const GridMain = defineComponent({
-  name: "GridMain",
+  name: 'GridMain',
   props: {
     data: {
       type: Object as PropType<User>,
-      default: () => null,
-    },
+      default: () => null
+    }
   },
   setup(props) {
-    const oData = ref(props.data);
-    const cData = computed(() => oData.value);
+    const oData = ref(props.data)
+    const cData = computed(() => oData.value)
     const dragover = (event: DragEvent) => {
-      event.preventDefault();
-    };
+      event.preventDefault()
+    }
 
     const drop = (event: DragEvent) => {
-      event.preventDefault();
-      let strData: any = event.dataTransfer?.getData("userData");
-      let sData = JSON.parse(strData) as User;
+      event.preventDefault()
+      let strData: any = event.dataTransfer?.getData('userData')
+      let sData = JSON.parse(strData) as User
       if (sData.group == props.data.group) {
-        oData.value = sData;
+        oData.value = sData
       }
-    };
+    }
     return () =>
       h(
-        "div",
+        'div',
         {
-          class: ["grid-main"],
+          class: ['grid-main'],
           onDragover: dragover,
-          onDrop: drop,
+          onDrop: drop
         },
         [
           h(GridUser, {
             data: unref(cData.value),
             draggable: false,
             style: {
-              gridArea: "1/1/span 2/span 2",
-            },
+              gridArea: '1/1/span 2/span 2'
+            }
           }),
           h(GridBanner, {
             data: unref(cData.value),
             style: {
-              gridArea: "1/3/span 2/-1",
-            },
-          }),
+              gridArea: '1/3/span 2/-1'
+            }
+          })
         ]
-      );
-  },
-});
+      )
+  }
+})
 const GridGroup = defineComponent({
-  name: "GridGroup",
+  name: 'GridGroup',
   props: {
     /**
      * 对象数组
      */
     data: {
       type: Array as PropType<User[]>,
-      default: () => [],
-    },
+      default: () => []
+    }
   },
   setup(props) {
-    const cData = computed(() => props.data);
+    const cData = computed(() => props.data)
     return () =>
       h(
-        "div",
+        'div',
         {
-          class: "grid-group",
+          class: 'grid-group'
         },
         [
           h(GridMain, {
-            data: cData.value[0],
+            data: cData.value[0]
           }),
           cData.value.map((user) =>
             h(GridUser, {
-              data: user,
+              data: user
             })
-          ),
+          )
         ]
-      );
-  },
-});
+      )
+  }
+})
 
-const groups = ref<Record<string, User[]>>();
-let token = "ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7";
+const GridLog = defineComponent({
+  name: 'GridLog',
+  setup(props, ctx) {
+    const logs = ref([
+      {
+        label: 'Linux授权',
+        value: 'chmod -R 755'
+      },
+      {
+        label: 'Linux下zip文件解压乱码',
+        value: 'unzip -O cp936'
+      },
+      {
+        label: 'Linux下zip文件解压乱码',
+        value: 'unzip -O cp936'
+      },
+      {
+        label: 'All My People',
+        value: '哪有小孩天天哭，哪有赌徒天天输！领域展开，坐杀搏徒。'
+      }
+    ])
+    return () =>
+      h(
+        'div',
+        {
+          class: 'grid-log'
+        },
+        [
+          h('div', { class: 'grid-log-progress' }),
+          h('div', { class: 'grid-log-content' }, logs.value.map((item) =>
+            h('div', { class: 'grid-log-item' }, [
+              h('div', { class: 'grid-log-label' }, item.label),
+              h('div', { class: 'grid-log-value' }, item.value)
+            ])
+          ))
+        ]
+      )
+  }
+})
+
+const groups = ref<Record<string, User[]>>()
+let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7'
 onMounted(() => {
-  let lUsers: any = localStorage.getItem("users");
+  let lUsers: any = localStorage.getItem('users')
   if (lUsers) {
-    lUsers = JSON.parse(lUsers);
-    groups.value = useUserGroup(lUsers);
+    lUsers = JSON.parse(lUsers)
+    groups.value = useUserGroup(lUsers)
   }
-  let lUpdateAt: any = localStorage.getItem("updated_at");
+  let lUpdateAt: any = localStorage.getItem('updated_at')
   if (lUpdateAt) {
-    lUpdateAt = Number(lUpdateAt);
+    lUpdateAt = Number(lUpdateAt)
   }
-  let sUpdateAt = 0;
-  fetch("https://api.github.com/repos/chendj001/v3css/issues/1/comments", {
+  let sUpdateAt = 0
+  fetch('https://api.github.com/repos/chendj001/v3css/issues/1/comments', {
     headers: {
-      Authorization: `token ${token.replace(/XXXX/gm, "")}`,
+      Authorization: `token ${token.replace(/XXXX/gm, '')}`
     },
-    cache: "no-cache",
+    cache: 'no-cache'
   })
     .then((res) => res.json())
     .then((res) => {
-      let oList: any = [];
-      let updateList: any = [];
+      let oList: any = []
+      let updateList: any = []
       res.map((item: any) => {
-        updateList.push(new Date(item.updated_at || item.created_at).getTime());
+        updateList.push(new Date(item.updated_at || item.created_at).getTime())
         try {
-          oList.push(new Function(`return ${item.body}`)());
+          oList.push(new Function(`return ${item.body}`)())
         } catch (error) {
-          console.log("出错了", item);
+          console.log('出错了', item)
         }
-      });
-      sUpdateAt = Math.max(...updateList);
+      })
+      sUpdateAt = Math.max(...updateList)
       if (sUpdateAt > lUpdateAt) {
-        groups.value = useUserGroup(oList);
-        localStorage.setItem("users", JSON.stringify(oList));
-        localStorage.setItem("updated_at", sUpdateAt + "");
-        console.log("更新了");
+        groups.value = useUserGroup(oList)
+        localStorage.setItem('users', JSON.stringify(oList))
+        localStorage.setItem('updated_at', sUpdateAt + '')
+        console.log('更新了')
       }
       // show.value = true;
-    });
-});
+    })
+})
 </script>
 
 <style lang="scss">
@@ -284,6 +325,61 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     grid-template-rows: repeat(3, 1fr);
     gap: $gap;
     padding: $padding;
+  }
+
+  &-log {
+    width: $width;
+    height: $height;
+    background: rgba($theme, 0.16);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #000;
+    position: relative;
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    scroll-timeline: --gridLog y;
+
+    // overflow: clip;
+    // overflow-clip-margin: content-box;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &-progress {
+      position: sticky;
+      height: 4px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      background: green;
+      transform-origin: 0 50%;
+      animation: auto grow-progress linear forwards;
+      animation-timeline: --gridLog;
+    }
+
+    &-content {
+      padding: 10px;
+    }
+
+    &-item {
+      background-color: rgba(#fff, 0.5);
+      padding: 5px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    &-label {
+      margin-bottom: 5px;
+      user-select: none;
+    }
+
+    &-value {
+      font-weight: bold;
+    }
   }
 
   &-main {
@@ -328,79 +424,13 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
   }
 }
 
-.dialog {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9;
-
-  &-mask {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(#000, 0.2);
+@keyframes grow-progress {
+  from {
+    transform: scaleX(0);
   }
 
-  &-content {
-    position: absolute;
-    width: 600px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 4px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  &-form {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 10px;
-
-    &-item {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 10px;
-    }
-
-    &-label {
-      grid-area: 1/1;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    &-com {
-      grid-area: 1/2/-1/-1;
-    }
-  }
-
-  &-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: $theme;
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  &-input {
-    display: flex;
-    align-items: center;
-    height: 32px;
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid $theme;
-    padding: 0 10px;
-    outline: none;
+  to {
+    transform: scaleX(1);
   }
 }
 </style>
