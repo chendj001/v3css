@@ -231,6 +231,11 @@ const GridLog = defineComponent({
       {
         label: '既来之，则安之。',
         value: '既然来到了这里，那么就安葬在这里吧。'
+      },
+      {
+        label:'文字轮播与图片轮播',
+        value:'巧用逐帧动画，配合补间动画实现一个无限循环的轮播效果',
+        url:'https://github.com/chokcoco/iCSS/issues/184'
       }
     ])
     return () =>
@@ -241,12 +246,16 @@ const GridLog = defineComponent({
         },
         [
           h('div', { class: 'grid-log-progress' }),
-          h('div', { class: 'grid-log-content' }, logs.value.map((item) =>
-            h('div', { class: 'grid-log-item' }, [
-              h('div', { class: 'grid-log-label' }, item.label),
-              h('div', { class: 'grid-log-value' }, item.value)
-            ])
-          ))
+          h(
+            'div',
+            { class: 'grid-log-content' },
+            logs.value.map((item) =>
+              h('div', { class: 'grid-log-item' }, [
+                h('div', { class: 'grid-log-label' }, item.label),
+                h('div', { class: 'grid-log-value' }, item.value)
+              ])
+            )
+          )
         ]
       )
   }
@@ -254,13 +263,33 @@ const GridLog = defineComponent({
 
 const GridScroll = defineComponent({
   name: 'GridScroll',
-  setup(props, ctx) {
-    const oRef = ref(null)
-    onMounted(() => {
-    })
-    const data = ref(['HTML', 'CSS', 'JS', 'Animation', 'UI/UX'])
-    return () => h('div', { class: 'grid-scroll scroller', dataSpeed: 'fast', ref: oRef }, h('ul', { class: 'grid-scroll-list tag-list scroller__inner' }, data.value.map(item => h('li', { class: 'grid-scroll-item' }, item))))
+  props: {
+    speed: {
+      type: Number,
+      default: () => 2
+    }
   },
+  setup(props, ctx) {
+    const data = ref(['HTML', 'CSS', 'JS', 'Animation', 'UI/UX', '哈哈哈', '喜喜'])
+    return () =>
+      h(
+        'div',
+        {
+          class: 'grid-scroll', style: {
+            '--speed': props.speed + 's', '--num': data.value.length
+          }
+        },
+        h(
+          'div',
+          { class: 'grid-scroll-content' },
+          [data.value.map((item) =>
+            h('div', { class: 'grid-scroll-item' }, item)
+          ),
+          h('div', { class: 'grid-scroll-item' }, data.value[0])
+          ]
+        )
+      )
+  }
 })
 
 const groups = ref<Record<string, User[]>>()
@@ -401,18 +430,54 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
 
   &-scroll {
     width: $width;
-    height: $height;
+    height: $size;
     background: rgba($theme, 0.16);
     border-radius: 4px;
     font-size: 12px;
     color: #000;
     position: relative;
     overflow: hidden;
-    mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+    --speed: 2s;
+    --num: 0;
+    // mask: linear-gradient(90deg,
+    //     transparent,
+    //     white 20%,
+    //     white 80%,
+    //     transparent);
+
+
+    &-content {
+      overflow: hidden;
+      animation: move calc(var(--speed) * var(--num)) steps(var(--num)) infinite;
+    }
 
     &-item {
-      display: inline-flex;
-      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      height: $size;
+      animation: liMove var(--speed) infinite;
+    }
+
+    @keyframes move {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      100% {
+        transform: translate(0, calc(-1 * $size * var(--num)));
+      }
+    }
+
+    @keyframes liMove {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      80%,
+      100% {
+        transform: translate(0, -$size);
+      }
     }
   }
 
