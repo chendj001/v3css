@@ -449,6 +449,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     &-content {
       overflow: hidden;
       animation: move calc(var(--speed) * var(--num)) steps(var(--num)) infinite;
+      animation-delay: var(--speed);
     }
 
     &-item {
@@ -457,6 +458,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       padding: 0 10px;
       height: $size;
       animation: liMove var(--speed) infinite;
+      animation-delay: var(--speed);
     }
 
     @keyframes move {
