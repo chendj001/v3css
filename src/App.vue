@@ -8,6 +8,7 @@
       <GridHighlight></GridHighlight>
     </div>
   </div>
+  <GridBack></GridBack>
 </template>
 
 <script setup lang="ts" name="App">
@@ -248,12 +249,12 @@ const GridLog = defineComponent({
         url: 'https://juejin.cn/post/7199438741533376573'
       },
       {
-        label:'clamp用于生成动态范围的函数',
-        value:'clamp()函数会返回这三个值中的中间值作为最终结果',
-        url:'https://developer.mozilla.org/zh-CN/docs/Web/CSS/clamp'
-      },{
-        label:'saewd047@gmail.com',
-        value:'abc334422'
+        label: 'clamp用于生成动态范围的函数',
+        value: 'clamp()函数会返回这三个值中的中间值作为最终结果',
+        url: 'https://developer.mozilla.org/zh-CN/docs/Web/CSS/clamp'
+      }, {
+        label: 'saewd047@gmail.com',
+        value: 'abc334422'
       }
     ])
     return () =>
@@ -334,6 +335,19 @@ const GridScroll = defineComponent({
   }
 })
 
+const GridBack = defineComponent({
+  name: 'GridBack',
+  setup() {
+    const onClick = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+    return () => h('div', { class: 'grid-back', onClick })
+  }
+})
+
 const groups = ref<Record<string, User[]>>()
 let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7'
 onMounted(() => {
@@ -395,7 +409,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
 
   &-layout {
     display: grid;
-    grid-template-columns: repeat(4, $width);
+    grid-template-columns: repeat(1, $width);
     justify-content: center;
     color: #fff;
     gap: $gap * 2;
@@ -579,6 +593,21 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
   &-highlight {
     color: #000;
   }
+
+  &-back {
+    position: fixed;
+    right: $padding;
+    bottom: $padding;
+    width: $size;
+    height: $size;
+    border-radius: 6px;
+    background-color: $theme;
+    cursor: pointer;
+    transform: translateY(150%);
+    animation: backToTop 1s linear forwards;
+    animation-timeline: scroll();
+    animation-range: entry 0 100px;
+  }
 }
 
 @keyframes grow-progress {
@@ -590,7 +619,14 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     transform: scaleX(1);
   }
 }
-
+@keyframes backToTop {
+  from {
+    transform: translateX(150%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
 ::highlight(color1) {
   color: $theme;
 }
