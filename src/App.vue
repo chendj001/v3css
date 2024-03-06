@@ -5,6 +5,7 @@
       </GridGroup>
       <GridLog></GridLog>
       <GridScroll></GridScroll>
+      <GridHighlight></GridHighlight>
     </div>
   </div>
 </template>
@@ -233,9 +234,23 @@ const GridLog = defineComponent({
         value: '既然来到了这里，那么就安葬在这里吧。'
       },
       {
-        label:'文字轮播与图片轮播',
-        value:'巧用逐帧动画，配合补间动画实现一个无限循环的轮播效果',
-        url:'https://github.com/chokcoco/iCSS/issues/184'
+        label: '文字轮播与图片轮播',
+        value: '巧用逐帧动画，配合补间动画实现一个无限循环的轮播效果',
+        url: 'https://github.com/chokcoco/iCSS/issues/184'
+      },
+      {
+        label: '设置元素圆角',
+        value: 'overflow: clip;overflow-clip-margin: content-box;'
+      },
+      {
+        label: '自定义高亮--Css Custom Highlight API',
+        value: '可以在不改变 dom 结构的情况下自定义任意文本的样式',
+        url: 'https://juejin.cn/post/7199438741533376573'
+      },
+      {
+        label:'clamp用于生成动态范围的函数',
+        value:'clamp()函数会返回这三个值中的中间值作为最终结果',
+        url:'https://developer.mozilla.org/zh-CN/docs/Web/CSS/clamp'
       }
     ])
     return () =>
@@ -258,6 +273,30 @@ const GridLog = defineComponent({
           )
         ]
       )
+  }
+})
+
+const GridHighlight = defineComponent({
+  name: 'GridHighlight',
+  setup(props, ctx) {
+    const oRef = ref<HTMLElement | undefined>(undefined)
+
+    onMounted(() => {
+      // 清除上个高亮
+      // @ts-ignore
+      CSS.highlights.clear();
+      // @ts-ignore
+      if (CSS.highlights) {
+        const range = new Range()
+        range.setStart(oRef.value!, 0);
+        range.setEnd(oRef.value!, 1);
+        // @ts-ignore
+        const highlight = new Highlight(range)
+        // @ts-ignore
+        CSS.highlights.set('color1', highlight)
+      }
+    })
+    return () => h('div', { class: 'grid-highlight', ref: oRef }, 'abc')
   }
 })
 
@@ -461,6 +500,16 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       animation-delay: var(--speed);
     }
 
+    &-content {
+      &:hover {
+        animation-play-state: paused;
+      }
+    }
+
+    &-content:hover &-item {
+      animation-play-state: paused;
+    }
+
     @keyframes move {
       0% {
         transform: translate(0, 0);
@@ -523,6 +572,10 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     background-repeat: no-repeat;
     cursor: pointer;
   }
+
+  &-highlight {
+    color: #000;
+  }
 }
 
 @keyframes grow-progress {
@@ -533,5 +586,9 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
   to {
     transform: scaleX(1);
   }
+}
+
+::highlight(color1) {
+  color: $theme;
 }
 </style>
