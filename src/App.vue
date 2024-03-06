@@ -359,9 +359,18 @@ const GridSteps = defineComponent({
 const GridFontColor = defineComponent({
   name: 'GridFontColor',
   setup(props, { slots }) {
-    return () => h('div', { class: 'grid-fontColor' }, h('div', {
-      class: 'grid-fontColor-text',
-    }, slots.default?.() || '根据背景色(color)自动切换黑白文字'))
+    const oRef = ref<HTMLElement | undefined>(undefined)
+    return () => h('div', { class: 'grid-fontColor', ref: oRef }, [
+      h('input', {
+        type: 'color',
+        onInput: (event: DragEvent) => {
+          oRef.value!.style.color = event.target.value
+        }
+      }),
+      h('div', {
+        class: 'grid-fontColor-text',
+      }, slots.default?.() || '根据背景色(color)自动切换黑白文字')
+    ])
   }
 })
 
@@ -646,6 +655,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     color: $theme;
     background-color: currentColor;
     padding: $padding;
+
     &-text {
       filter: grayscale(1) contrast(999) invert(1)
     }
