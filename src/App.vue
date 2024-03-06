@@ -6,6 +6,8 @@
       <GridLog></GridLog>
       <GridScroll></GridScroll>
       <GridHighlight></GridHighlight>
+      <GridSteps></GridSteps>
+      <GridFontColor></GridFontColor>
     </div>
   </div>
   <GridBack></GridBack>
@@ -348,6 +350,21 @@ const GridBack = defineComponent({
   }
 })
 
+const GridSteps = defineComponent({
+  name: 'GridSteps',
+  setup(props, ctx) {
+    return () => h('div', { class: 'grid-steps' })
+  },
+})
+const GridFontColor = defineComponent({
+  name: 'GridFontColor',
+  setup(props, { slots }) {
+    return () => h('div', { class: 'grid-fontColor' }, h('div', {
+      class: 'grid-fontColor-text',
+    }, slots.default?.() || '根据背景色自动切换黑白文字'))
+  }
+})
+
 const groups = ref<Record<string, User[]>>()
 let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7'
 onMounted(() => {
@@ -608,6 +625,37 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     animation-timeline: scroll();
     animation-range: entry 0 100px;
   }
+
+  &-steps {
+    display: inline-block;
+    width: $size;
+    height: $size;
+    border-radius: 6px;
+    background-color: $theme;
+    cursor: pointer;
+    background-image: url('https://imgservices-1252317822.image.myqcloud.com/image/012420220165415/b0005044.svg');
+    background-size: auto 36px;
+    background-repeat: no-repeat;
+    animation: random 11s -0.7s steps(11, jump-none) infinite;
+  }
+
+  &-fontColor {
+    width: $width;
+    height: $height;
+    border-radius: 6px;
+    color: $theme;
+    background-color: currentColor;
+    padding: $padding;
+    &-text {
+      filter: grayscale(1) contrast(999) invert(1)
+    }
+  }
+}
+
+@keyframes random {
+  to {
+    background-position: 100%;
+  }
 }
 
 @keyframes grow-progress {
@@ -619,14 +667,17 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     transform: scaleX(1);
   }
 }
+
 @keyframes backToTop {
   from {
     transform: translateX(150%);
   }
+
   to {
     transform: translateY(0);
   }
 }
+
 ::highlight(color1) {
   color: $theme;
 }
