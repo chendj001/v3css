@@ -361,7 +361,7 @@ const GridFontColor = defineComponent({
   setup(props, { slots }) {
     return () => h('div', { class: 'grid-fontColor' }, h('div', {
       class: 'grid-fontColor-text',
-    }, slots.default?.() || '根据背景色自动切换黑白文字'))
+    }, slots.default?.() || '根据背景色(color)自动切换黑白文字'))
   }
 })
 
