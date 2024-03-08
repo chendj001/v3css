@@ -254,9 +254,14 @@ const GridLog = defineComponent({
         label: 'clamp用于生成动态范围的函数',
         value: 'clamp()函数会返回这三个值中的中间值作为最终结果',
         url: 'https://developer.mozilla.org/zh-CN/docs/Web/CSS/clamp'
-      }, {
+      },
+      {
         label: 'saewd047@gmail.com',
         value: 'abc334422'
+      },
+      {
+        label: 'gitlens-dist/webviews/graph.js',
+        value: 'He(e.loading);break}}Ke(!0);}'
       }
     ])
     return () =>
@@ -290,12 +295,12 @@ const GridHighlight = defineComponent({
     onMounted(() => {
       // 清除上个高亮
       // @ts-ignore
-      CSS.highlights.clear();
+      CSS.highlights.clear()
       // @ts-ignore
       if (CSS.highlights) {
         const range = new Range()
-        range.setStart(oRef.value!, 0);
-        range.setEnd(oRef.value!, 1);
+        range.setStart(oRef.value!, 0)
+        range.setEnd(oRef.value!, 1)
         // @ts-ignore
         const highlight = new Highlight(range)
         // @ts-ignore
@@ -315,24 +320,31 @@ const GridScroll = defineComponent({
     }
   },
   setup(props, ctx) {
-    const data = ref(['HTML', 'CSS', 'JS', 'Animation', 'UI/UX', '哈哈哈', '喜喜'])
+    const data = ref([
+      'HTML',
+      'CSS',
+      'JS',
+      'Animation',
+      'UI/UX',
+      '哈哈哈',
+      '喜喜'
+    ])
     return () =>
       h(
         'div',
         {
-          class: 'grid-scroll', style: {
-            '--speed': props.speed + 's', '--num': data.value.length
+          class: 'grid-scroll',
+          style: {
+            '--speed': props.speed + 's',
+            '--num': data.value.length
           }
         },
-        h(
-          'div',
-          { class: 'grid-scroll-content' },
-          [data.value.map((item) =>
+        h('div', { class: 'grid-scroll-content' }, [
+          data.value.map((item) =>
             h('div', { class: 'grid-scroll-item' }, item)
           ),
           h('div', { class: 'grid-scroll-item' }, data.value[0])
-          ]
-        )
+        ])
       )
   }
 })
@@ -344,7 +356,7 @@ const GridBack = defineComponent({
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
-      });
+      })
     }
     return () => h('div', { class: 'grid-back', onClick })
   }
@@ -354,23 +366,28 @@ const GridSteps = defineComponent({
   name: 'GridSteps',
   setup(props, ctx) {
     return () => h('div', { class: 'grid-steps' })
-  },
+  }
 })
 const GridFontColor = defineComponent({
   name: 'GridFontColor',
   setup(props, { slots }) {
     const oRef = ref<HTMLElement | undefined>(undefined)
-    return () => h('div', { class: 'grid-fontColor', ref: oRef }, [
-      h('input', {
-        type: 'color',
-        onInput: (event: DragEvent) => {
-          oRef.value!.style.color = event.target.value
-        }
-      }),
-      h('div', {
-        class: 'grid-fontColor-text',
-      }, slots.default?.() || '根据背景色(color)自动切换黑白文字')
-    ])
+    return () =>
+      h('div', { class: 'grid-fontColor', ref: oRef }, [
+        h('input', {
+          type: 'color',
+          onInput: (event: DragEvent) => {
+            oRef.value!.style.color = event.target.value
+          }
+        }),
+        h(
+          'div',
+          {
+            class: 'grid-fontColor-text'
+          },
+          slots.default?.() || '根据背景色(color)自动切换黑白文字'
+        )
+      ])
   }
 })
 
@@ -527,7 +544,6 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     //     white 80%,
     //     transparent);
 
-
     &-content {
       overflow: hidden;
       animation: move calc(var(--speed) * var(--num)) steps(var(--num)) infinite;
@@ -657,7 +673,7 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     padding: $padding;
 
     &-text {
-      filter: grayscale(1) contrast(999) invert(1)
+      filter: grayscale(1) contrast(999) invert(1);
     }
   }
 }
