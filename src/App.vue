@@ -376,8 +376,8 @@ const GridFontColor = defineComponent({
       h('div', { class: 'grid-fontColor', ref: oRef }, [
         h('input', {
           type: 'color',
-          onInput: (event: DragEvent) => {
-            oRef.value!.style.color = event.target.value
+          onInput: (event: Event) => {
+            oRef.value!.style.color = (event.target as HTMLInputElement).value 
           }
         }),
         h(
