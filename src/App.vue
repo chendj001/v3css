@@ -514,6 +514,10 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       &:last-child {
         margin-bottom: 0;
       }
+      animation: appear 1s linear forwards, 
+    disappear 1s linear forwards;
+    animation-timeline: view();
+    animation-range: entry,exit;
     }
 
     &-label {
@@ -703,6 +707,29 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
     transform: translateY(0);
   }
 }
+@keyframes appear {
+    0% {
+        opacity: 0;
+        transform: scaleX(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+@keyframes disappear {
+    100% {
+        opacity: 0;
+        transform: scaleX(0.9);
+    }
+
+    0% {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
 
 ::highlight(color1) {
   color: $theme;
