@@ -25,15 +25,14 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id){
-          if(id.includes('node_modules')){
-            return 'nm'
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "nm";
           }
-          if(id.includes('components')){
-            return 'coms'
+          if (id.includes("components")) {
+            return "coms";
           }
-          console.log(id)
-        }
+        },
       },
     },
   },
