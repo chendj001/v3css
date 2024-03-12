@@ -8,6 +8,7 @@
       <GridHighlight></GridHighlight>
       <GridSteps></GridSteps>
       <GridFontColor></GridFontColor>
+      <GridSvg></GridSvg>
     </div>
   </div>
   <GridBack></GridBack>
@@ -390,6 +391,12 @@ const GridFontColor = defineComponent({
       ])
   }
 })
+const GridSvg=defineComponent({
+  name:'GridSvg',
+  setup(){
+    return ()=>h('svg',{class:'grid-svg',xmlns:'http://www.w3.org/2000/svg'},h('polyline',{class:'grid-svg-line',points:'240 10 140 10 140 90 0 90','stroke-width':2}))
+  }
+})
 
 const groups = ref<Record<string, User[]>>()
 let token = 'ghp_XXXXsp8WlTftjAdHIbXXXXhAXecvvMEbXXXXPS3c6k2cvSV7'
@@ -680,8 +687,32 @@ $height: $size * 3 + $gap * (3-1) + $padding * 2;
       filter: grayscale(1) contrast(999) invert(1);
     }
   }
+  &-svg {
+    border-radius: 4px;
+    overflow: hidden;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    width: $width;
+    height: $height;
+    &-line {
+      stroke: $theme;
+       stroke-dasharray: 40,480;
+      stroke-dashoffset: 0;
+       animation: move 2.4*2s infinite linear;
+      stroke-linejoin:round;
+      fill:transparent;
+    }
+  }
 }
-
+@keyframes move {
+    0% {
+        stroke-dashoffset: 0;
+    }
+    100% {
+        stroke-dashoffset: -320;
+    }
+}
 @keyframes random {
   to {
     background-position: 100%;
